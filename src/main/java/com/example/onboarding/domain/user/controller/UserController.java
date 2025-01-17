@@ -1,5 +1,7 @@
 package com.example.onboarding.domain.user.controller;
 
+import com.example.onboarding.common.jwt.dto.TokenResponse;
+import com.example.onboarding.domain.user.dto.request.UserSignRequest;
 import com.example.onboarding.domain.user.dto.request.UserSignUpRequest;
 import com.example.onboarding.domain.user.dto.response.UserSignUpResponse;
 import com.example.onboarding.domain.user.service.UserService;
@@ -23,8 +25,16 @@ public class UserController {
     @Operation(summary = "회원가입")
     @PostMapping("/signup")
     public ResponseEntity<UserSignUpResponse> signUp(
-            @RequestBody @Valid UserSignUpRequest userSignUpRequest
+            @RequestBody @Valid UserSignUpRequest signUpRequest
     ){
-        return ResponseEntity.ok(userService.signUp(userSignUpRequest));
+        return ResponseEntity.ok(userService.signUp(signUpRequest));
+    }
+
+    @Operation(summary = "로그인")
+    @PostMapping("/sign")
+    public ResponseEntity<TokenResponse> sign(
+            @RequestBody @Valid UserSignRequest signRequest
+    ){
+        return ResponseEntity.ok(userService.sign(signRequest));
     }
 }

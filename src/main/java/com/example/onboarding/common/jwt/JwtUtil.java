@@ -17,11 +17,13 @@ import java.util.Date;
 @Slf4j
 @Component
 public class JwtUtil {
-    @Value("${jwt.secret.key}")
-    private String key;
     private static final long EXPIRATION_TIME = 60 * 30 * 1000;
     private static final long REFRESH_TIME = 1000 * 60 * 60 * 24 * 7;
-    private final SecretKey secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(key));
+    private final SecretKey secretKey;
+
+    public JwtUtil(@Value("${jwt.secret.key}") String key){
+        secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(key));
+    }
 
     public boolean validateToken(String token) {
         try {
@@ -38,7 +40,7 @@ public class JwtUtil {
             return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
         }
         catch (ExpiredJwtException e){
-            log.error(e.getMessage());
+            return e.getClaims();
         }
     }
 
