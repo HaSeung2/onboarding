@@ -1,6 +1,6 @@
 package com.example.onboarding.common.jwt;
 
-import com.example.onboarding.common.jwt.dto.TokenResponse;
+import com.example.onboarding.common.jwt.dto.response.TokenResponse;
 import com.example.onboarding.domain.user.entity.Authorities;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -17,7 +17,7 @@ import java.util.Date;
 @Slf4j
 @Component
 public class JwtUtil {
-    private static final long EXPIRATION_TIME = 60 * 30 * 1000;
+    private static final long EXPIRATION_TIME = 1000 * 60 * 30;
     private static final long REFRESH_TIME = 1000 * 60 * 60 * 24 * 7;
     private final SecretKey secretKey;
 
@@ -44,11 +44,19 @@ public class JwtUtil {
         }
     }
 
-    public TokenResponse createToken(Long id, String nickname, Authorities authorities) {
+    public String getUsername(String token) {
+        return this.getClaims(token).get("username", String.class);
+    }
+
+    public String getUserId(String refreshToken) {
+        return this.getClaims(refreshToken).get("sub", String.class);
+    }
+
+    public TokenResponse createToken(Long id, String username, Authorities authorities) {
         Date now = new Date();
         String accessToken =  Jwts.builder()
-                                    .claim("sub", String.valueOf(id))
-                                    .claim("nickname", nickname)
+                                    .claim("sub", id.toString())
+                                    .claim("username", username)
                                     .claim("authorities", authorities.name())
                                     .setIssuedAt(now)
                                     .setExpiration(new Date(now.getTime() + EXPIRATION_TIME))

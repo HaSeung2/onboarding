@@ -1,6 +1,7 @@
 package com.example.onboarding.domain.user.controller;
 
-import com.example.onboarding.common.jwt.dto.TokenResponse;
+import com.example.onboarding.common.jwt.dto.request.TokenRequest;
+import com.example.onboarding.common.jwt.dto.response.TokenResponse;
 import com.example.onboarding.domain.user.dto.request.UserSignRequest;
 import com.example.onboarding.domain.user.dto.request.UserSignUpRequest;
 import com.example.onboarding.domain.user.dto.response.UserSignUpResponse;
@@ -10,10 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "회원가입 / 로그인 API")
 @RestController
@@ -36,5 +34,13 @@ public class UserController {
             @RequestBody @Valid UserSignRequest signRequest
     ){
         return ResponseEntity.ok(userService.sign(signRequest));
+    }
+
+    @Operation(summary = "토큰 재 발급")
+    @PostMapping("/refresh")
+    public ResponseEntity<TokenResponse> refreshToken(
+            @RequestBody TokenRequest tokenRequest
+    ){
+        return ResponseEntity.ok(userService.refreshToken(tokenRequest));
     }
 }

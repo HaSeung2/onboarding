@@ -1,4 +1,4 @@
-package com.example.onboarding.common.jwt.dto;
+package com.example.onboarding.common.jwt.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;
