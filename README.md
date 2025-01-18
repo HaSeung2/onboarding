@@ -32,6 +32,9 @@
 ```
 
 ## Refresh 토큰 이용해 Access / Refresh 토큰 재발급
+
+- 클라이언트에서 요청 보낼 시 DTO에 Access / RefreshToken 모두 담아서 요청
+
 `/auth/refresh`
 
 ```json
