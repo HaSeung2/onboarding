@@ -149,7 +149,7 @@ class UserServiceTest {
     @DisplayName("RefreshToken을 이용한 Access / RefreshToken 재발급 성공 테스트")
     void refreshTokenSuccessTest(){
         TokenRequest tokenRequest = TokenRequest.builder()
-                .accessToken("accessToken")
+                .token("accessToken")
                 .refreshToken("refreshToken")
                 .build();
 
@@ -182,7 +182,7 @@ class UserServiceTest {
     @DisplayName("RefreshToken이 만료되었을 경우 예외처리")
     void refreshTokenExpiredTest(){
         TokenRequest tokenRequest = TokenRequest.builder()
-                .accessToken("accessToken")
+                .token("accessToken")
                 .refreshToken("refreshToken")
                 .build();
 
@@ -197,7 +197,7 @@ class UserServiceTest {
     @DisplayName("찾을 수 없는 유저일 경우 예외")
     void refreshTokenNotFountUserTest(){
         TokenRequest tokenRequest = TokenRequest.builder()
-                .accessToken("accessToken")
+                .token("accessToken")
                 .refreshToken("refreshToken")
                 .build();
 
@@ -214,7 +214,7 @@ class UserServiceTest {
     @DisplayName("이미 사용한 RefreshToken인 경우 예외처리")
     void refreshTokenUsedTest(){
         TokenRequest tokenRequest = TokenRequest.builder()
-                .accessToken("accessToken")
+                .token("accessToken")
                 .refreshToken("refreshToken")
                 .build();
 

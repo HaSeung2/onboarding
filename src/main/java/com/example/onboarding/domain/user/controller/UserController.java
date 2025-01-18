@@ -47,7 +47,7 @@ public class UserController {
     }
 
     @Operation(summary = "토큰 재 발급")
-    @Parameter(name = "accessToken", description = "Access 토큰")
+    @Parameter(name = "token", description = "Access 토큰")
     @Parameter(name = "refreshToken", description = "Refresh 토큰")
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refreshToken(

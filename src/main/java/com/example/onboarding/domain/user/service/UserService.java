@@ -43,19 +43,25 @@ public class UserService {
         if(!jwtUtil.validateToken(tokenRequest.getRefreshToken())){
             throw new IllegalArgumentException("다시 로그인 해주세요.");
         }
-        Long userId = Long.valueOf(jwtUtil.getUserId(tokenRequest.getAccessToken()));
+        Long userId = Long.valueOf(jwtUtil.getUserId(tokenRequest.getToken()));
         User user = userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 유저입니다."));
         return this.createAndSaveToken(user, tokenRequest.getRefreshToken());
     }
 
-    private TokenResponse createAndSaveToken(User user, String refreshToken) {
-        TokenResponse tokenResponse = jwtUtil.createToken(user.getId(), user.getUsername(), user.getAuthorities());
+    private TokenResponse createAndSaveToken(User user, String requestRefreshToken) {
+        TokenResponse tokenResponse = this.createToken(user);
+        this.saveRefreshToken(user, requestRefreshToken, tokenResponse);
+        return tokenResponse;
+    }
 
+    private TokenResponse createToken(User user) {
+        return jwtUtil.createToken(user.getId(), user.getUsername(), user.getAuthorities());
+    }
+
+    private void saveRefreshToken(User user, String requestRefreshToken, TokenResponse tokenResponse) {
         UserRefreshToken userRefreshToken = refreshTokenRepository.findByUserId(user.getId())
                 .map(token ->{
-                    if(refreshToken != null && !token.getRefreshToken().equals(refreshToken)){
-                        throw new IllegalArgumentException("이미 사용한 RefreshToken 입니다.");
-                    }
+                    this.validateRefreshToken(requestRefreshToken, token.getRefreshToken());
                     token.updateRefreshToken(tokenResponse.getRefreshToken());
                     return token;
                 })
@@ -64,8 +70,12 @@ public class UserService {
                         .refreshToken(tokenResponse.getRefreshToken())
                         .build()
                 );
-
         refreshTokenRepository.save(userRefreshToken);
-        return tokenResponse;
+    }
+
+    private void validateRefreshToken(String requestRefreshToken, String oldRefreshToken) {
+        if(requestRefreshToken != null && !oldRefreshToken.equals(requestRefreshToken)){
+            throw new IllegalArgumentException("이미 사용한 RefreshToken 입니다.");
+        }
     }
 }
