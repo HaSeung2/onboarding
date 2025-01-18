@@ -18,37 +18,25 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final UserRefreshTokenRepository tokenRepository;
+    private final UserRefreshTokenRepository refreshTokenRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
     public UserSignUpResponse signUp(UserSignUpRequest userSignUpRequest) {
-        User user = userSignUpRequest.toEntity();
+        User user = userSignUpRequest.toEntity(passwordEncoder.encode(userSignUpRequest.getPassword()));
         if(userRepository.existsByUsername(user.getUsername())){
             throw new IllegalArgumentException("사용할 수 없는 계정명입니다.");
         }
-        user.passwordEncoder(passwordEncoder.encode(user.getPassword()));
         return new UserSignUpResponse(userRepository.save(user));
     }
 
     public TokenResponse sign(UserSignRequest signRequest) {
-        User user = userRepository.findByUsername(signRequest.getUsername()).orElseThrow(() -> new IllegalArgumentException("로그인을 다시 시도해주세요."));
+        User user = userRepository.findByUsername(signRequest.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("로그인을 다시 시도해주세요."));
         if(!passwordEncoder.matches(signRequest.getPassword(), user.getPassword())){
             throw new IllegalArgumentException("로그인을 다시 시도해주세요.");
         }
-        TokenResponse tokenResponse = jwtUtil.createToken(user.getId(), user.getUsername(), user.getAuthorities());
-        UserRefreshToken userRefreshToken = tokenRepository.findByUserId(user.getId())
-                .map(token ->{
-                    token.updateRefreshToken(tokenResponse.getRefreshToken());
-                    return token;
-                })
-                .orElseGet(() -> UserRefreshToken.builder()
-                        .userId(user.getId())
-                        .refreshToken(tokenResponse.getRefreshToken())
-                        .build()
-                );
-        tokenRepository.save(userRefreshToken);
-        return tokenResponse;
+        return this.createAndSaveToken(user, null);
     }
 
     public TokenResponse refreshToken(TokenRequest tokenRequest) {
@@ -57,10 +45,15 @@ public class UserService {
         }
         Long userId = Long.valueOf(jwtUtil.getUserId(tokenRequest.getAccessToken()));
         User user = userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 유저입니다."));
+        return this.createAndSaveToken(user, tokenRequest.getRefreshToken());
+    }
+
+    private TokenResponse createAndSaveToken(User user, String refreshToken) {
         TokenResponse tokenResponse = jwtUtil.createToken(user.getId(), user.getUsername(), user.getAuthorities());
-        UserRefreshToken userRefreshToken = tokenRepository.findByUserId(user.getId())
+
+        UserRefreshToken userRefreshToken = refreshTokenRepository.findByUserId(user.getId())
                 .map(token ->{
-                    if(!token.getRefreshToken().equals(tokenRequest.getRefreshToken())){
+                    if(refreshToken != null && !token.getRefreshToken().equals(refreshToken)){
                         throw new IllegalArgumentException("이미 사용한 RefreshToken 입니다.");
                     }
                     token.updateRefreshToken(tokenResponse.getRefreshToken());
@@ -71,7 +64,8 @@ public class UserService {
                         .refreshToken(tokenResponse.getRefreshToken())
                         .build()
                 );
-        tokenRepository.save(userRefreshToken);
+
+        refreshTokenRepository.save(userRefreshToken);
         return tokenResponse;
     }
 }
