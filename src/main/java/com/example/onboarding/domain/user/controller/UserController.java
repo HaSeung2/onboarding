@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,7 +34,10 @@ public class UserController {
     public ResponseEntity<TokenResponse> sign(
             @RequestBody @Valid UserSignRequest signRequest
     ){
-        return ResponseEntity.ok(userService.sign(signRequest));
+        TokenResponse tokenResponse = userService.sign(signRequest);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.AUTHORIZATION, tokenResponse.getToken())
+                .body(tokenResponse);
     }
 
     @Operation(summary = "토큰 재 발급")
@@ -41,6 +45,9 @@ public class UserController {
     public ResponseEntity<TokenResponse> refreshToken(
             @RequestBody TokenRequest tokenRequest
     ){
-        return ResponseEntity.ok(userService.refreshToken(tokenRequest));
+        TokenResponse tokenResponse = userService.refreshToken(tokenRequest);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.AUTHORIZATION, tokenResponse.getToken())
+                .body(tokenResponse);
     }
 }
