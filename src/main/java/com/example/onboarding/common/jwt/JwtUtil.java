@@ -48,8 +48,8 @@ public class JwtUtil {
         return this.getClaims(token).get("username", String.class);
     }
 
-    public String getUserId(String refreshToken) {
-        return this.getClaims(refreshToken).get("sub", String.class);
+    public String getUserId(String token) {
+        return this.getClaims(token).get("sub", String.class);
     }
 
     public TokenResponse createToken(Long id, String username, Authorities authorities) {
