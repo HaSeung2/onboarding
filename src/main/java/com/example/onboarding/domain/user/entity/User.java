@@ -30,9 +30,5 @@ public class User {
         this.nickname = nickname;
         this.authorities = authorities;
     }
-
-    public void passwordEncoder(String password) {
-        this.password = password;
-    }
 }
 
