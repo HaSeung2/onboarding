@@ -7,6 +7,7 @@ import com.example.onboarding.domain.user.dto.request.UserSignUpRequest;
 import com.example.onboarding.domain.user.dto.response.UserSignUpResponse;
 import com.example.onboarding.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,9 @@ public class UserController {
     private final UserService userService;
 
     @Operation(summary = "회원가입")
+    @Parameter(name = "username", description = "아이디")
+    @Parameter(name = "password", description = "비밀번호")
+    @Parameter(name = "nickname", description = "닉네임")
     @PostMapping("/signup")
     public ResponseEntity<UserSignUpResponse> signUp(
             @RequestBody @Valid UserSignUpRequest signUpRequest
@@ -30,6 +34,8 @@ public class UserController {
     }
 
     @Operation(summary = "로그인")
+    @Parameter(name = "username", description = "아이디")
+    @Parameter(name = "password", description = "비밀번호")
     @PostMapping("/sign")
     public ResponseEntity<TokenResponse> sign(
             @RequestBody @Valid UserSignRequest signRequest
@@ -41,6 +47,8 @@ public class UserController {
     }
 
     @Operation(summary = "토큰 재 발급")
+    @Parameter(name = "accessToken", description = "Access 토큰")
+    @Parameter(name = "refreshToken", description = "Refresh 토큰")
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refreshToken(
             @RequestBody TokenRequest tokenRequest
