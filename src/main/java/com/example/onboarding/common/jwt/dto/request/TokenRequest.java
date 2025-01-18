@@ -7,13 +7,13 @@ import lombok.Getter;
 @Getter
 public class TokenRequest {
     @NotBlank
-    private String accessToken;
+    private String token;
     @NotBlank
     private String refreshToken;
 
     @Builder
-    public TokenRequest(String accessToken, String refreshToken) {
-        this.accessToken = accessToken;
+    public TokenRequest(String token, String refreshToken) {
+        this.token = token;
         this.refreshToken = refreshToken;
     }
 }
