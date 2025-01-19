@@ -1,5 +1,7 @@
 package com.example.onboarding.domain.user.service;
 
+import com.example.onboarding.common.exception.CustomException;
+import com.example.onboarding.common.exception.ErrorCode;
 import com.example.onboarding.common.jwt.JwtUtil;
 import com.example.onboarding.common.jwt.dto.request.TokenRequest;
 import com.example.onboarding.common.jwt.dto.response.TokenResponse;
@@ -25,26 +27,26 @@ public class UserService {
     public UserSignUpResponse signUp(UserSignUpRequest userSignUpRequest) {
         User user = userSignUpRequest.toEntity(passwordEncoder.encode(userSignUpRequest.getPassword()));
         if(userRepository.existsByUsername(user.getUsername())){
-            throw new IllegalArgumentException("사용할 수 없는 계정명입니다.");
+            throw new CustomException(ErrorCode.DUPLICATION_USER_NAME);
         }
         return new UserSignUpResponse(userRepository.save(user));
     }
 
     public TokenResponse sign(UserSignRequest signRequest) {
         User user = userRepository.findByUsername(signRequest.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("로그인을 다시 시도해주세요."));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NAME_NOT_MATCH));
         if(!passwordEncoder.matches(signRequest.getPassword(), user.getPassword())){
-            throw new IllegalArgumentException("로그인을 다시 시도해주세요.");
+            throw new CustomException(ErrorCode.USER_PASSWORD_NOT_MATCH);
         }
         return this.createAndSaveToken(user, null);
     }
 
     public TokenResponse refreshToken(TokenRequest tokenRequest) {
         if(!jwtUtil.validateToken(tokenRequest.getRefreshToken())){
-            throw new IllegalArgumentException("다시 로그인 해주세요.");
+            throw new CustomException(ErrorCode.EXPIRED_REFRESH_TOKEN);
         }
         Long userId = Long.valueOf(jwtUtil.getUserId(tokenRequest.getToken()));
-        User user = userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 유저입니다."));
+        User user = userRepository.findById(userId).orElseThrow(()-> new CustomException(ErrorCode.USER_ID_NOT_MATCH));
         return this.createAndSaveToken(user, tokenRequest.getRefreshToken());
     }
 
@@ -75,7 +77,7 @@ public class UserService {
 
     private void validateRefreshToken(String requestRefreshToken, String oldRefreshToken) {
         if(requestRefreshToken != null && !oldRefreshToken.equals(requestRefreshToken)){
-            throw new IllegalArgumentException("이미 사용한 RefreshToken 입니다.");
+            throw new CustomException(ErrorCode.USED_REFRESH_TOKEN);
         }
     }
 }
